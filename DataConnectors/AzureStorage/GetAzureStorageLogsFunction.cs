@@ -1,5 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+private string MaskSensitiveInfo(string input)
+{
+    if (string.IsNullOrEmpty(input))
+    {
+        return input;
+    }
+    int maskLength = input.Length - 4;
+    return new string('*', maskLength > 0 ? maskLength : 0) + input.Substring(maskLength > 0 ? maskLength : 0);
+}
 #region Includes
 using System;
 using System.Collections.Concurrent;
@@ -136,16 +146,16 @@ namespace HoneyBucketLogParser
                 var logAnalyticsKey = Environment.GetEnvironmentVariable("LogAnalyticsKey");
                 var logAnalyticsWorkspace = Environment.GetEnvironmentVariable("LogAnalyticsWorkspace");
 
-                log.LogInformation("BlobStorageConnectionString " + blobStorageConnectionString);
-                log.LogInformation("BlobStorageAccountKeys " + blobStorageKeys);
-                log.LogInformation("LogAnalyticsKey " + logAnalyticsKey);
-                log.LogInformation("LogAnalyticsWorkspace " + logAnalyticsWorkspace);
+                log.LogInformation("BlobStorageConnectionString " + MaskSensitiveInfo(blobStorageConnectionString));
+                log.LogInformation("BlobStorageAccountKeys " + MaskSensitiveInfo(blobStorageKeys));
+                log.LogInformation("LogAnalyticsKey " + MaskSensitiveInfo(logAnalyticsKey));
+                log.LogInformation("LogAnalyticsWorkspace " + MaskSensitiveInfo(logAnalyticsWorkspace));
 
                 foreach (var setting in new string[] { logAnalyticsWorkspace, logAnalyticsKey, blobStorageKeys, blobStorageConnectionString })
                 {
                     if (string.IsNullOrWhiteSpace(setting) || setting.StartsWith("http") || setting.StartsWith("@Microsoft.KeyVault"))
                     {
-                        log.LogError("Invalid setting detected " + setting);
+                        log.LogError("Invalid setting detected " + MaskSensitiveInfo(setting));
                         log.LogError("Please see https://docs.microsoft.com/en-us/azure/app-service/app-service-key-vault-references");
                         throw new InvalidOperationException("Invalid setting");
                     }
